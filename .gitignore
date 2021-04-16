@@ -1,0 +1,5 @@
+todo
+makefile
+*.exe
+*.o
+test.c
