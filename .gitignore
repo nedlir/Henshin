@@ -1,5 +1,6 @@
-todo
-makefile
 *.exe
 *.o
+*.mp4
+makefile
+todo
 test.c

@@ -17,10 +17,10 @@
 bool is_directory(char *_currentEntityName, struct stat _currentEntityType);
 
 void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflags _flags,
-                     struct stat _currentEntityType, char *_directoryPath);
+                     struct stat _currentEntityType, char *_directoryPath, char *_expression);
 
 // Functions:
-void remove_prefix(char *_fileName);
+void remove_prefix(char *_fileName, char *_expression);
 void remove_suffix(char *_fileName);
 void change_file_type(char *_fileName);
 void zero_fill(char *_fileType);
@@ -59,7 +59,9 @@ int main(int argc, char *argv[])
 
     struct stat currentEntityType; // this could be either a file or a folder
 
-    parse_directory(currentDirectory, directory, flags, currentEntityType, directoryPath);
+    flags.removePrefix = TRUE;
+    parse_directory(currentDirectory, directory, flags, currentEntityType,
+                    directoryPath, "annoyingsite.com - ");
 
     return EXIT_SUCCESS;
 }
@@ -67,7 +69,7 @@ int main(int argc, char *argv[])
 bool is_directory(char *_currentEntityName, struct stat _currentEntityType)
 {
     // Determines if current entity is a directory:
-    if (stat(_currentEntityName, &_currentEntityType) == -1)
+    if (stat(_currentEntityName, &_currentEntityType) == -1) // if stat() failed
     {
         fprintf(stderr, "Entity access error\n");
         exit(EXIT_FAILURE);
@@ -79,7 +81,7 @@ bool is_directory(char *_currentEntityName, struct stat _currentEntityType)
 }
 
 void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflags _flags,
-                     struct stat _currentEntityType, char *_directoryPath)
+                     struct stat _currentEntityType, char *_directoryPath, char *_expression)
 {
     while (_currentDirectory != NULL) // traverse directory  if is not empty and exists
     {
@@ -90,7 +92,7 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
             /*
             Parses subdirectories if recursive argument will be given:
             we will not traverse CURRENT_DIRECTORY and PARENT_DIRECTORY to avoid inifinite recursion
-            This feature should be added last...
+            This feature will be added last...
             
             if (_flags.isRecursive)
                 if (strcmp(_currentEntityName, CURRENT_DIRECTORY) != 0 && strcmp(_currentEntityName, PARENT_DIRECTORY) != 0)
@@ -99,9 +101,10 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
         }
         else // entity is not a directory, perform file operations
         {
-            /*
+
             if (_flags.removePrefix)
-                remove_prefix(fileName);
+                remove_prefix(_currentEntityName, _expression);
+            /*
             if (_flags.removeSuffix)
                 remove_suffix(fileName);
             .
@@ -120,5 +123,47 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
     {
         fprintf(stderr, "Directory closing failed.\n");
         exit(EXIT_FAILURE);
+    }
+}
+
+void remove_prefix(char *_fileName, char *_expression)
+{
+
+    /*
+    // The idea of the algorithm is to simply compare the letters of the expression
+    // with the target _fileName and to remove the length of the expression in case
+    // a match is found.
+    */
+
+    if (strlen(_expression) >= strlen(_fileName)) //expression to remove can not exceed _fileName
+        return;
+
+    int i = 0; //counter to traverse _fileName
+    int j = 0; //counter to traverse _expression
+
+    bool _isExpressionFound = TRUE;
+
+    while (_expression[j] != '\0')
+    {
+        if (_expression[j] == _fileName[i])
+        {
+            i++;
+            j++;
+        }
+        else
+        {
+            _isExpressionFound = FALSE;
+            break;
+        }
+    }
+
+    if (_isExpressionFound)
+    {
+        char *_newFileName = (char *)malloc(strlen(_fileName) + 1);
+        strcpy(_newFileName, _fileName);
+        printf("\nOriginal file name: %s", _newFileName);
+        printf("\nNew file name: %s", (_newFileName + strlen(_expression)));
+        //rename(_newFileName, (_newFileName + strlen(_expression)));
+        free(_newFileName);
     }
 }
