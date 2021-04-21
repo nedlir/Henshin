@@ -29,15 +29,6 @@ void validate_chdir(int _result)
     }
 }
 
-void validate_stat(int _result)
-{
-    if (_result == -1) // if stat() failed
-    {
-        fprintf(stderr, "Entity access error.\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
 void validate_closedir(int _result)
 {
     if (_result != 0) // if closedir() failed

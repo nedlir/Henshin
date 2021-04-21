@@ -4,7 +4,6 @@
 void validate_opendir(DIR *_result);
 void validate_readdir(struct dirent *_result);
 void validate_chdir(int _result);
-void validate_stat(int _result);
 void validate_closedir(int _result);
 void validate_malloc(void *_result);
 

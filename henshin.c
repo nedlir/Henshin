@@ -1,5 +1,3 @@
-// Initial structure for the HENSHIN: file names changing cli tool.
-
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,21 +38,20 @@ int main(int argc, char *argv[])
     // Goes to the defined directory and opens it into 'directory' variable:
     char *directoryPath = argv[1];           // syntactic sugar
 
-    int chdir_result = chdir(directoryPath); // navigate to path
+    int chdir_result = chdir(directoryPath); // program is now running in this directory
     validate_chdir(chdir_result);
 
-    DIR *directory = opendir(CURRENT_DIRECTORY); // open current directory
+    DIR *directory = opendir(CURRENT_DIRECTORY); // loads current directory
     validate_opendir(directory);
 
-    // Reads directory (basically this will provide us a pointer to first entity in the directory):
-    struct dirent *currentDirectory = readdir(directory); // a pointer to directory's first entry
+    struct dirent *currentDirectory = readdir(directory); // a pointer to directory's first entity
     validate_readdir(currentDirectory);
 
     struct stat currentEntityType; // this could be either a file or a folder
 
     flags.removePrefix = TRUE;
     parse_directory(currentDirectory, directory, flags, currentEntityType,
-                    "annoyingsite.com - ");
+                    "annoyingsiteurl.com - ");
 
     return EXIT_SUCCESS;
 }
@@ -62,8 +59,7 @@ int main(int argc, char *argv[])
 bool is_directory(char *_currentEntityName, struct stat _currentEntityType)
 {
     // Determines if current entity is a directory:
-    int stat_result = stat(_currentEntityName, &_currentEntityType);
-    validate_stat(stat_result);
+    stat(_currentEntityName, &_currentEntityType);
 
     if (S_ISDIR(_currentEntityType.st_mode))
         return TRUE;
@@ -127,9 +123,9 @@ void remove_prefix(char *_fileName, char *_expression)
 {
 
     /*
-    // The idea of the algorithm is to simply compare the letters of the expression
-    // with the target _fileName and to remove the length of the expression in case
-    // a match is found.
+    The idea of the algorithm is to simply compare the letters of the expression
+    with the target _fileName and to remove the length of the expression in case
+    a match is found.
     */
 
     if (strlen(_expression) >= strlen(_fileName)) //expression to remove can not exceed _fileName
@@ -164,4 +160,10 @@ void remove_prefix(char *_fileName, char *_expression)
 
         free(_newFileName);
     }
+}
+
+void remove_suffix(char *_fileName, char *_expression)
+{
+
+
 }
