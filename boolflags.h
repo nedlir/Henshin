@@ -1,3 +1,6 @@
+#ifndef BOOLFLAGS_H
+#define BOOLFLAGS_H
+
 typedef struct boolean_flags
 {
     bool removePrefix;
@@ -10,3 +13,5 @@ typedef struct boolean_flags
     bool trimSpacesALL;
     bool isRecursive;
 } boolflags;
+
+#endif /* BOOLFLAGS_H */

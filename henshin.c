@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "bool.h"
 #include "boolflags.h"
+#include "validation.h"
+
 // #include "colors.h" (later...)
 
 #define MAX_FILE_NAME_LENGTH 255 // in modern OS, this is the maximum file length
@@ -17,7 +20,7 @@
 bool is_directory(char *_currentEntityName, struct stat _currentEntityType);
 
 void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflags _flags,
-                     struct stat _currentEntityType, char *_directoryPath, char *_expression);
+                     struct stat _currentEntityType, char *_expression);
 
 // Functions:
 void remove_prefix(char *_fileName, char *_expression);
@@ -35,33 +38,23 @@ int main(int argc, char *argv[])
     memset(&flags, FALSE, sizeof(flags));
 
     // Goes to the defined directory and opens it into 'directory' variable:
-    char *directoryPath = argv[1];
-    if ((chdir(directoryPath) == -1)) // if chdir() failed
-    {
-        fprintf(stderr, "Provided directory path could not be accessed.\n");
-        exit(EXIT_FAILURE);
-    }
+    char *directoryPath = argv[1];           // syntactic sugar
 
-    DIR *directory = opendir(CURRENT_DIRECTORY); // a pointer to directory's location
-    if ((directory == NULL))                     // if opendir() failed
-    {
-        fprintf(stderr, "Provided directory could not be opened.\n");
-        exit(EXIT_FAILURE);
-    }
+    int chdir_result = chdir(directoryPath); // navigate to path
+    validate_chdir(chdir_result);
+
+    DIR *directory = opendir(CURRENT_DIRECTORY); // open current directory
+    validate_opendir(directory);
 
     // Reads directory (basically this will provide us a pointer to first entity in the directory):
     struct dirent *currentDirectory = readdir(directory); // a pointer to directory's first entry
-    if ((currentDirectory == NULL))                       // if readdir() failed
-    {
-        fprintf(stderr, "Provided directory could not be read.\n");
-        exit(EXIT_FAILURE);
-    }
+    validate_readdir(currentDirectory);
 
     struct stat currentEntityType; // this could be either a file or a folder
 
     flags.removePrefix = TRUE;
     parse_directory(currentDirectory, directory, flags, currentEntityType,
-                    directoryPath, "annoyingsite.com - ");
+                    "annoyingsite.com - ");
 
     return EXIT_SUCCESS;
 }
@@ -69,11 +62,9 @@ int main(int argc, char *argv[])
 bool is_directory(char *_currentEntityName, struct stat _currentEntityType)
 {
     // Determines if current entity is a directory:
-    if (stat(_currentEntityName, &_currentEntityType) == -1) // if stat() failed
-    {
-        fprintf(stderr, "Entity access error\n");
-        exit(EXIT_FAILURE);
-    }
+    int stat_result = stat(_currentEntityName, &_currentEntityType);
+    validate_stat(stat_result);
+
     if (S_ISDIR(_currentEntityType.st_mode))
         return TRUE;
 
@@ -81,9 +72,9 @@ bool is_directory(char *_currentEntityName, struct stat _currentEntityType)
 }
 
 void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflags _flags,
-                     struct stat _currentEntityType, char *_directoryPath, char *_expression)
+                     struct stat _currentEntityType, char *_expression)
 {
-    while (_currentDirectory != NULL) // traverse directory  if is not empty and exists
+    while (_currentDirectory != NULL) // traverse directory if is not empty and exists
     {
         char *_currentEntityName = _currentDirectory->d_name; // syntactic sugar
 
@@ -119,11 +110,17 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
         _currentDirectory = readdir(_directory);
     }
 
-    if (closedir(_directory) != 0) // if closedir() failed
-    {
-        fprintf(stderr, "Directory closing failed.\n");
-        exit(EXIT_FAILURE);
-    }
+    int closedir_result = closedir(_directory);
+    validate_closedir(closedir_result);
+}
+
+char *string_duplicate(char *_origin)
+{
+    char *_destination;
+    _destination = (char *)malloc(strlen(_origin) + 1);
+    validate_malloc(_destination);
+    strcpy(_destination, _origin);
+    return _destination;
 }
 
 void remove_prefix(char *_fileName, char *_expression)
@@ -159,11 +156,12 @@ void remove_prefix(char *_fileName, char *_expression)
 
     if (_isExpressionFound)
     {
-        char *_newFileName = (char *)malloc(strlen(_fileName) + 1);
-        strcpy(_newFileName, _fileName);
+        char *_newFileName = string_duplicate(_fileName);
+
         printf("\nOriginal file name: %s", _newFileName);
         printf("\nNew file name: %s", (_newFileName + strlen(_expression)));
         //rename(_newFileName, (_newFileName + strlen(_expression)));
+
         free(_newFileName);
     }
 }
