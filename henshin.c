@@ -1,13 +1,13 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include "bool.h"
 #include "boolflags.h"
 #include "validation.h"
+#include "str_handling.h"
 
 // #include "colors.h" (later...)
 
@@ -21,13 +21,13 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
                      struct stat _currentEntityType, char *_expression);
 
 // Functions:
+//File Names:
 void remove_prefix(char *_fileName, char *_expression);
-void remove_suffix(char *_fileName);
-void change_file_type(char *_fileName);
-void zero_fill(char *_fileType);
-void trim_spaces_left(char *_fileName);
-void trim_spaces_right(char *_fileName);
-void trim_spaces_all(char *_fileName);
+void remove_suffix(char *_fileName, char *_expression);
+void change_filetype(char *_originFileType, char *_destinationFileType);
+
+//File movement and deletion:
+void delete_filetype(char *_fileType);
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     memset(&flags, FALSE, sizeof(flags));
 
     // Goes to the defined directory and opens it into 'directory' variable:
-    char *directoryPath = argv[1];           // syntactic sugar
+    char *directoryPath = argv[1]; // syntactic sugar
 
     int chdir_result = chdir(directoryPath); // program is now running in this directory
     validate_chdir(chdir_result);
@@ -89,17 +89,19 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
         else // entity is not a directory, perform file operations
         {
 
+            
+
             if (_flags.removePrefix)
                 remove_prefix(_currentEntityName, _expression);
-            /*
+
             if (_flags.removeSuffix)
-                remove_suffix(fileName);
-            .
-            .
-            .
-            if (_flags.trimSpacesALL)
-                    trim_spaces_all(_fileName);
-            */
+                remove_suffix(_currentEntityName, _expression);
+
+            // if (_flags.changeFiletype)
+            //     change_filetype();
+
+            // if (_flags.deleteFiletype)
+            //     delete_filetype();
         }
 
         // Goes to next entity:
@@ -110,14 +112,7 @@ void parse_directory(struct dirent *_currentDirectory, DIR *_directory, boolflag
     validate_closedir(closedir_result);
 }
 
-char *string_duplicate(char *_origin)
-{
-    char *_destination;
-    _destination = (char *)malloc(strlen(_origin) + 1);
-    validate_malloc(_destination);
-    strcpy(_destination, _origin);
-    return _destination;
-}
+
 
 void remove_prefix(char *_fileName, char *_expression)
 {
@@ -152,7 +147,7 @@ void remove_prefix(char *_fileName, char *_expression)
 
     if (_isExpressionFound)
     {
-        char *_newFileName = string_duplicate(_fileName);
+        char *_newFileName = str_duplicate(_fileName);
 
         printf("\nOriginal file name: %s", _newFileName);
         printf("\nNew file name: %s", (_newFileName + strlen(_expression)));
@@ -165,5 +160,8 @@ void remove_prefix(char *_fileName, char *_expression)
 void remove_suffix(char *_fileName, char *_expression)
 {
 
+    if (strlen(_expression) >= strlen(_fileName)) //expression to remove can not exceed _fileName
+        return;
 
+    
 }
